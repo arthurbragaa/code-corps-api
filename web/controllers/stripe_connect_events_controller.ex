@@ -3,9 +3,9 @@ defmodule CodeCorps.StripeConnectEventsController do
 
   alias CodeCorps.StripeService.Events
 
-  def webhook(conn, json) do
-    handle(json) |> IO.inspect
-    conn |> respond
+  def create(conn, json) do
+    result = handle(json)
+    respond(conn, result)
   end
 
   def handle(%{"type" => "account.updated"} = attributes) do
@@ -18,5 +18,10 @@ defmodule CodeCorps.StripeConnectEventsController do
 
   def handle(_attributes), do: {:ok, :unhandled_event}
 
-  def respond(conn), do: conn |> send_resp(200, "")
+  def respond(conn, {:error, _error}) do
+    conn |> send_resp(400, "")
+  end
+  def respond(conn, _) do
+    conn |> send_resp(200, "")
+  end
 end
